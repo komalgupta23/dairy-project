@@ -59,7 +59,7 @@ df = load_data()
 # Sidebar Navigation
 st.sidebar.title("Navigation")
 
-page = st.sidebar.radio("Go to", ["Home", "Sales & Revenue Analysis", "Inventory & Stock Management"])
+page = st.sidebar.radio("Go to", ["Overview", "Sales & Revenue Analysis", "Inventory & Stock Management", "Customer Demand & Trends"])
 
 # KPI Cards
 st.sidebar.title("Key Metrics")
@@ -108,7 +108,7 @@ if selected_product != "All":
 
 
 # Home Page
-if page == "Home":
+if page == "Overview":
     st.title("📊 Dairy Data Analysis Dashboard")
     st.image("Dairy products.jpg",use_container_width=True)
     
@@ -160,7 +160,7 @@ if page == "Sales & Revenue Analysis":
 
     # Create the funnel chart
     funnel_fig = px.funnel(brand_revenue, x="Approx. Total Revenue(INR)", y="Brand", 
-                       title="Revenue by Brands", color="Brand", width=1400, height=600)
+                       title="Revenue by Brands", color="Brand", width=1400, height=450)
 
     # Force descending order in the funnel chart
     funnel_fig.update_layout(
@@ -203,7 +203,7 @@ if page == "Sales & Revenue Analysis":
         title="Quantity Sold Across Indian States",
         color_continuous_scale="blues",
         range_color=[0, 70_000],  # Fix color range between 0 and 4 million
-        width=3000, height=500
+        width=3000, height=450
     )
 
     # Set layout
@@ -215,19 +215,20 @@ if page == "Sales & Revenue Analysis":
 
     st.plotly_chart(map_fig)
 
-    
+    # Top 5 Dairy Products by Revenue
     st.write("### Top 5 Dairy Products by Revenue")
     top_products = filtered_df.groupby("Product Name")["Approx. Total Revenue(INR)"].sum().nlargest(5).reset_index()
     fig = px.bar(top_products, x="Product Name", y="Approx. Total Revenue(INR)", color="Product Name", 
-                 title="Top 5 Products by Revenue", width=1400, height=600,
+                 title="Top 5 Products by Revenue", width=1400, height=450,
                  text="Approx. Total Revenue(INR)")
     fig.update_traces(textposition='outside')
     fig.update_layout(legend=dict(font=dict(size=14, weight="bold")))
     st.plotly_chart(fig)
 
+    #Sales by Channel
     st.write("### Sales by Channel")
     sales_channel_fig = px.pie(filtered_df, names="Sales Channel", values="Approx. Total Revenue(INR)", 
-                               title="Sales Channel Distribution", width=1200, height=600)
+                               title="Sales Channel Distribution", width=1200, height=450)
     sales_channel_fig.update_traces(textinfo="percent+label", textfont=dict(size=14, family="Arial", color="black"))
     sales_channel_fig.update_layout(legend=dict(font=dict(size=14, weight="bold")))
     st.plotly_chart(sales_channel_fig)
@@ -249,7 +250,7 @@ if page == "Sales & Revenue Analysis":
     # Create Line Chart
     trend_fig = px.line(revenue_by_month, x="Month Name", y="Approx. Total Revenue(INR)", 
                      color="Year", markers=True, line_shape="linear",
-                     title="Monthly Revenue Trends Over Time", width=1400, height=600)
+                     title="Monthly Revenue Trends Over Time", width=1400, height=450)
 
     # Add Data Labels
     trend_fig.update_traces(text=revenue_by_month["Approx. Total Revenue(INR)"].apply(lambda x: f"₹{x:,.2f}"), 
@@ -293,7 +294,7 @@ elif page == "Inventory & Stock Management":
     color="Product Name",
     title="Product Shelf Life Distribution",
     labels={"Shelf Life (days)": "Shelf Life (Days)", "Product Name": "Product"},
-    height=500
+    height=450
     )
 
     # Customize layout for better readability
@@ -331,7 +332,7 @@ elif page == "Inventory & Stock Management":
     color="Product Name",
     title="Reorder Quantity by Product",
     labels={"Reorder Quantity (liters/kg)": "Reorder Quantity", "Product Name": "Product"},
-    height=700
+    height=450
     )
 
     # Add a line to connect points (to make it a lollipop chart)
@@ -351,4 +352,102 @@ elif page == "Inventory & Stock Management":
     )
 
     st.plotly_chart(reorder_fig)
+    
+elif page == "Customer Demand & Trends":
+    
+    st.title("📈 Customer Demand & Trends")
 
+    # Best-Selling Products
+    st.write("### 🏆 Best-Selling Dairy Products")
+    top_selling = filtered_df.groupby("Product Name")["Quantity Sold (liters/kg)"].sum().nlargest(10).reset_index()
+    best_selling_fig = px.bar(
+        top_selling,
+        x="Product Name",
+        y="Quantity Sold (liters/kg)",
+        color="Product Name",
+        title="Top 10 Best-Selling Dairy Products"
+    )
+    best_selling_fig.update_traces(texttemplate='%{y}', textposition='outside')  # Add data labels
+    st.plotly_chart(best_selling_fig)
+
+    # Seasonal Trends
+    st.write("### 📅 Seasonal Sales Trends")
+    # Extract Month and Year for Analysis
+    filtered_df["Month"] = pd.to_datetime(filtered_df["Date"]).dt.month
+    filtered_df["Year"] = pd.to_datetime(filtered_df["Date"]).dt.year
+
+    # Define Month Order for Proper Sorting
+    month_order = {
+    1: "Jan", 2: "Feb", 3: "Mar", 4: "Apr", 5: "May", 6: "Jun", 
+    7: "Jul", 8: "Aug", 9: "Sep", 10: "Oct", 11: "Nov", 12: "Dec"
+    }
+
+    # Convert Month Number to Month Name
+    filtered_df["Month Name"] = filtered_df["Month"].map(month_order)
+
+    # Aggregate Sales Data by Month
+    seasonal_sales = filtered_df.groupby(["Year", "Month Name"])["Quantity Sold (liters/kg)"].sum().reset_index()
+
+    # Sort Data by Year & Month Order
+    seasonal_sales["Month Number"] = seasonal_sales["Month Name"].map({v: k for k, v in month_order.items()})
+    seasonal_sales = seasonal_sales.sort_values(["Year", "Month Number"])
+
+    # Create Line Chart for Seasonal Trends
+    seasonal_trend_fig = px.line(seasonal_sales, 
+                              x="Month Name", 
+                              y="Quantity Sold (liters/kg)", 
+                              color="Year",
+                              markers=True)
+
+    # Enhance Chart Formatting
+    seasonal_trend_fig.update_traces(textposition="top center", marker=dict(size=8))
+    seasonal_trend_fig.update_layout(
+    xaxis_title="Month",
+    yaxis_title="Quantity Sold",
+    xaxis={'categoryorder':'array', 'categoryarray': list(month_order.values())},  # Ensure Months are in Order
+    legend_title="Year",
+    font=dict(size=14)
+    )
+
+    # Display Chart
+    st.plotly_chart(seasonal_trend_fig, use_container_width=True)
+
+
+    # Brand Popularity
+    st.write("### 🏷️ Brand Market Share")
+    # Aggregate Revenue by Brand and Product
+    brand_product_revenue = filtered_df.groupby(["Brand", "Product Name"])["Quantity Sold (liters/kg)"].sum().reset_index()
+
+    # Create Sunburst Chart
+    sunburst_fig = px.sunburst(
+    brand_product_revenue,
+    path=["Brand", "Product Name"],  # Hierarchical Levels (Parent → Child)
+    values="Quantity Sold (liters/kg)",  # Determines Size of Each Section
+    title="Brand Market Share by Revenue",
+    color="Quantity Sold (liters/kg)", 
+    color_continuous_scale="blues"  # Adjust color scheme if needed
+    )
+
+    # Improve Formatting
+    sunburst_fig.update_traces(textinfo="label+percent parent")  # Show Label + Parent %
+    sunburst_fig.update_layout(margin=dict(t=50, l=25, r=25, b=25))
+
+    # Display Chart
+    st.plotly_chart(sunburst_fig, use_container_width=True)
+
+
+
+    # Price Sensitivity Analysis
+    st.write("### 💰 Price Sensitivity Analysis")
+    price_sensitivity_fig = px.scatter(
+        filtered_df,
+        x="Price per Unit",
+        y="Quantity Sold (liters/kg)",
+        color="Product Name",
+        size="Quantity Sold (liters/kg)",
+        title="Impact of Price on Sales",
+        hover_data=["Product Name"]
+    )
+    price_sensitivity_fig.update_traces(marker=dict(opacity=0.7))  # Improve visibility
+    
+    st.plotly_chart(price_sensitivity_fig)
