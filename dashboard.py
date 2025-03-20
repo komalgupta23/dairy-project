@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_option_menu import option_menu
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -22,27 +23,35 @@ st.markdown("""
             background-color: #FFD7BE !important; /* Light Grey */
         }
         
+        /* Sidebar (Navigation Bar) Font Styling */
+        [data-testid="stSidebar"] h1 {
+            font-size: 40px !important;
+            font-family: 'Times New Roman', serif !important;
+            font-weight: bold !important;
+            text-decoration: none !important; /* ❌ Removes underline */
+        }
+
         /* Font Styling */
         h1 {
             font-size: 48px !important; 
-            font-family: 'Algerian', 'Times New Roman', serif; 
+            font-family: 'Times New Roman', serif !important;
             font-weight: bold; 
             text-decoration: underline;
         }
         h2 {
-            font-size: 40px !important; 
-            font-family: 'Times New Roman', serif; 
+            font-size: 45px !important; 
+            font-family: 'Times New Roman', serif !important; 
             font-weight: bold; 
             font-style: italic;
         }
         h3 {
-            font-size: 32px !important; 
-            font-family: 'Times New Roman', serif; 
+            font-size: 42px !important; 
+            font-family: 'Times New Roman', serif !important; 
             font-weight: bold;
         }
         p {
-            font-size: 18px !important; 
-            font-family: 'Times New Roman', serif;
+            font-size: 22px !important; 
+            font-family: 'Times New Roman', serif !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -57,12 +66,26 @@ def load_data():
 df = load_data()
 
 # Sidebar Navigation
-st.sidebar.title("Navigation")
+#st.sidebar.title(" ☰")
 
-page = st.sidebar.radio("Go to", ["Overview", "Sales & Revenue Analysis", "Inventory & Stock Management", "Customer Demand & Trends"])
+with st.sidebar:
+    selected_page = option_menu(
+        menu_title="☰ Navigation Bar",  # Hide default title
+        options=["Overview", "Sales", "Inventory", "Customer Demand"],
+        icons=["lightbulb", "cash", "box", "graph-up-arrow"],  # Optional icons
+        #menu_icon="cast",  # Sidebar icon
+        default_index=0,  # Default selected option
+        styles={
+            "container": {"padding": "0!important", "background-color": "#FFD7BE"},
+            "icon": {"color": "black", "font-size": "22px"},
+            "nav-link": {"font-size": "22px", "text-align": "left", "margin": "0px"},
+            "nav-link-selected": {"background-color": "143D60"},
+            "menu_title":{"font-weight":"bold"},
+        }
+    )
 
 # KPI Cards
-st.sidebar.title("Key Metrics")
+st.sidebar.title("🧾Key Metrics")
 total_products = df["Product Name"].nunique()
 total_revenue = df["Approx. Total Revenue(INR)"].sum()
 avg_price = df["Price per Unit"].mean()
@@ -80,7 +103,7 @@ st.sidebar.info(total_quantity_sold_card)
 
 # Filter menu
 # Sidebar Filters
-st.sidebar.title("Filters")
+st.sidebar.title("📶 Filters")
 selected_brand = st.sidebar.selectbox("Select Brand", ["All"] + df["Brand"].unique().tolist())
 selected_location = st.sidebar.selectbox("Select Location", ["All"] + df["Location"].unique().tolist())
 selected_product = st.sidebar.selectbox("Select Product", ["All"] + df["Product Name"].unique().tolist())
@@ -108,8 +131,8 @@ if selected_product != "All":
 
 
 # Home Page
-if page == "Overview":
-    st.title("📊 Dairy Data Analysis Dashboard")
+if selected_page == "Overview":
+    st.title("📊 Dairy Product Analysis Dashboard")
     st.image("Dairy products.jpg",use_container_width=True)
     
     st.write("### About the Dataset")
@@ -134,7 +157,7 @@ if page == "Overview":
     #st.dataframe(filtered_df)
 
 # Sales & Revenue Analysis Page
-if page == "Sales & Revenue Analysis":
+if selected_page == "Sales":
     st.title("💰 Sales & Revenue Analysis")
 
     # Apply filters to KPI calculations
@@ -271,7 +294,7 @@ if page == "Sales & Revenue Analysis":
 
 
 # Inventory & Stock Management
-elif page == "Inventory & Stock Management":
+elif selected_page == "Inventory":
     
     st.title("📦 Inventory & Stock Management")
     
@@ -353,7 +376,7 @@ elif page == "Inventory & Stock Management":
 
     st.plotly_chart(reorder_fig)
     
-elif page == "Customer Demand & Trends":
+elif selected_page == "Customer Demand":
     
     st.title("📈 Customer Demand & Trends")
 
