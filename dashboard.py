@@ -70,7 +70,7 @@ df = load_data()
 
 with st.sidebar:
     selected_page = option_menu(
-        menu_title="☰ Navigation Bar",  # Hide default title
+        menu_title="Navigation Bar",  # Hide default title
         options=["Overview", "Sales", "Inventory", "Customer Demand"],
         icons=["lightbulb", "cash", "box", "graph-up-arrow"],  # Optional icons
         #menu_icon="cast",  # Sidebar icon
@@ -133,7 +133,7 @@ if selected_product != "All":
 # Home Page
 if selected_page == "Overview":
     st.title("📊 Dairy Product Analysis Dashboard")
-    st.image("Dairy products.jpg",use_container_width=True)
+    st.image("Dairy products.jpg",use_column_width=True)
     
     st.write("### About the Dataset")
     st.write("This dataset contains information on dairy product sales, revenue, inventory, and production. It includes details such as product names, sales channels, stock levels, and total revenue.")
@@ -381,14 +381,14 @@ elif selected_page == "Customer Demand":
     st.title("📈 Customer Demand & Trends")
 
     # Best-Selling Products
-    st.write("### 🏆 Best-Selling Dairy Products")
+    st.write("### 🏆 Most Demanded Dairy Products")
     top_selling = filtered_df.groupby("Product Name")["Quantity Sold (liters/kg)"].sum().nlargest(10).reset_index()
     best_selling_fig = px.bar(
         top_selling,
         x="Product Name",
         y="Quantity Sold (liters/kg)",
         color="Product Name",
-        title="Top 10 Best-Selling Dairy Products"
+        title="Top 10 Best-Demanded Dairy Products"
     )
     best_selling_fig.update_traces(texttemplate='%{y}', textposition='outside')  # Add data labels
     st.plotly_chart(best_selling_fig)
