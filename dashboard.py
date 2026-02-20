@@ -474,3 +474,8 @@ elif selected_page == "Customer Demand":
     price_sensitivity_fig.update_traces(marker=dict(opacity=0.7))  # Improve visibility
     
     st.plotly_chart(price_sensitivity_fig)
+
+
+# To run the code, use the command:
+# streamlit run dashboard.py in your terminal.
+# You can open the terminal using shortcut key from keyboard: Ctrl + ` OR Ctrl + J OR Run icon in the top right corner of VS Code.
