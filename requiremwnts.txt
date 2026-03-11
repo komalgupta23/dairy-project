@@ -1,0 +1,7 @@
+streamlit
+streamlit-option-menu
+pandas
+numpy
+plotly.express
+json
+requests
